@@ -98,42 +98,65 @@ void serialEvent1()
 void parseSerialCommand(String message)
 {
   // print the new message ot the serial port 0 (USB)
-  Serial.print("\n==============================");
-  Serial.print("\nNew command is== ");
+  Serial.print("\nNew command is: ");
   Serial.print(message);
 
   // parse message
-  char command = message[1];
-  int value = message.substring(2).toInt();
+  char command = message[0];
+  int value = message.substring(1).toInt();
 
-  Serial.print("/n");
+
+  /*
+  Serial.print("\n");
   Serial.print(command);
   Serial.print(",");
   Serial.print(value);
+  */
 
-  // VOLTAGE
-  if (command == "H")
+  switch (command)
   {
-    // BlinkM_fadeToRGB(0x00, 0x00, 0xff, 0xff);
-    updateLED(0x02, 0xff, 0xff);
-    Serial.print("\nNew VOLTAGE is: ");
-    Serial.print(command);
+    // VOLTAGE
+    case 'H':
+      //updateLED(0x02, 0xff, 0xff);
+      Serial.print("\nNew VOLTAGE is: ");
+      Serial.print( String(value) );
+      Serial.print(" V");
+      break;
+    // CURRENT
+    case 'c':
+      //updateLED(0x09, 0xff, 0xff);
+      Serial.print("\nNew CURRENT is: ");
+      Serial.print( String(value) );
+      Serial.print(" nA");
+      break;
+    // ARC
+    case 'a':
+      //updateLED(0x03, 0xff, 0xff);
+      Serial.print("\nNumber of ARCs detected: ");
+      Serial.print( String(value) );
+      break;
+    // CURRENT STEP LIMIT EXCEEDED
+    case 'i':
+      //updateLED(0x03, 0xff, 0xff);
+      Serial.print("\nCurrent step limit exceeded:");
+      Serial.print( String(value) );
+      Serial.print(" nA");
+      break;
+    // ERROR
+    case 'E':
+      //updateLED(0x03, 0xff, 0xff);
+      sendAcknowledge();
+      Serial.print("\nError detected, code:");
+      Serial.print( String(value) );
+      break;
   }
-  // CURRENT
-  else if (command == "c")
-  {
-    updateLED(0x09, 0xff, 0xff);
-    Serial.print("\nNew CURRENT is: ");
-    Serial.print(command);
-  }
-  else if (command == "error")
-  {
-    updateLED(0x03, 0xff, 0xff);
-  }
-  else
-  {
-    updateLED(0x0A, 0xff, 0xff);
-  }
+
+  Serial.print("\n==============================");
+}
+
+void sendAcknowledge()
+{
+  Serial1.write("*ACK:");
 }
 
 // Update LED script based on the new serial command recieved

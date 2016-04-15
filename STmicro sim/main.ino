@@ -9,6 +9,7 @@ String serial1Command = "";
 // all commands need to start with an '*'
 bool serialCommandFlag = false;
 
+Timer timer(5000, sendUpdateToPhoton);
 
 
 // ===============================================
@@ -19,6 +20,10 @@ void setup() {
 
     // Open serial port 1 (via Tx/Rx pins)
     Serial1.begin(115200);
+
+    // start a software timer for updateing the PHOTON with
+    // the latest VOLTAGE and CURRENT
+    timer.start();
 }
 
 
@@ -27,23 +32,27 @@ void setup() {
 // runs continuously
 void loop()
 {
-  // Send new voltage and current to the Photon every 400ms
-  sendToPhoton("voltage", random(4000));
-  sendToPhoton("current", random(10));
 
-  delay(2500);
 }
 
 
 
 // ===============================================
+// timer Interrupt
+void sendUpdateToPhoton()
+{
+  // Send new voltage and current to the Photon every 400ms
+  sendToPhoton("voltage", random(4000));
+  sendToPhoton("current", random(10));
+}
+
 // Interrupt for serial 0 (USB)
 // called when data is rady to be read
 void serialEvent()
 {
     char c = Serial.read();
     //Serial.println(c);
-    Serial1.write(c);
+    Serial1.write("*E1:");
 }
 
 // Interrupt for serial 1 (Tx/Rx)
