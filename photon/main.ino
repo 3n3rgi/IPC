@@ -1,11 +1,12 @@
-//#include "I2C_LED.h"
-
 //Library from BlinkM
 #include "BlinkM_funcs.h"
 
+// my serial communication Library
+#include "serial_com.h"
 
 
-// ===============================================
+
+// ============================================================
 String statusArray [3] = {"off", "on", "error"};
 String colorArray [8] = {"white", "red", "green", "blue", "cyan", "magenta", "yellow", "black"};
 String actionArray [3]= {"solid", "blink", "breathe"};
@@ -24,18 +25,9 @@ channel IPC_LED_1 = {
   {"solid", "blink", "breathe"}
 };
 
-// Serial: this is the COMMAND variable
-// it holds the most recent command from the serial_1 port
-String serial1Command = "";
-
-// set flag once a '*' is recieved:
-// the '*' represents the start of a new command
-// all commands need to start with an '*'
-bool serialCommandFlag = false;
-
-
-
-// ===============================================
+// ============================================================
+// setup
+// ============================================================
 void setup() {
 
     // Open serial port (via USB port)
@@ -49,17 +41,17 @@ void setup() {
     BlinkM_stopScript(0x00);
 }
 
-
-
-// ===============================================
+// ============================================================
+// loop
+// ============================================================
 // runs continuously
 void loop() {
 
 }
 
-
-
-// ===============================================
+// ============================================================
+// interrupts
+// ============================================================
 // Interrupt for serial 0 (USB)
 // called when data is rady to be read
 void serialEvent()
@@ -74,98 +66,12 @@ void serialEvent()
 void serialEvent1()
 {
     char c = Serial1.read();
-
-    if (c == '*')
-    {
-      serial1Command = "";
-      serialCommandFlag = true;
-    }
-    else if (serialCommandFlag == true && c == ':')
-    {
-      parseSerialCommand(serial1Command);
-      serial1Command = "";
-      serialCommandFlag = false;
-      Serial.println("");
-    }
-    else if (serialCommandFlag == true)
-    {
-      serial1Command = serial1Command + c;
-      Serial.print(c);
-    }
+    ser1CharParse(c);
 }
 
-// Parse the command read over serial1
-void parseSerialCommand(String message)
-{
-  // print the new message ot the serial port 0 (USB)
-  Serial.print("\nNew command is: ");
-  Serial.print(message);
-
-  // parse message
-  char command = message[0];
-  int value = message.substring(1).toInt();
-
-
-  /*
-  Serial.print("\n");
-  Serial.print(command);
-  Serial.print(",");
-  Serial.print(value);
-  */
-
-  switch (command)
-  {
-    // VOLTAGE
-    case 'H':
-      //updateLED(0x02, 0xff, 0xff);
-      Serial.print("\nNew VOLTAGE is: ");
-      Serial.print( String(value) );
-      Serial.print(" V");
-      break;
-    // CURRENT
-    case 'c':
-      //updateLED(0x09, 0xff, 0xff);
-      Serial.print("\nNew CURRENT is: ");
-      Serial.print( String(value) );
-      Serial.print(" nA");
-      break;
-    // ARC
-    case 'a':
-      //updateLED(0x03, 0xff, 0xff);
-      Serial.print("\nNumber of ARCs detected: ");
-      Serial.print( String(value) );
-      break;
-    // CURRENT STEP LIMIT EXCEEDED
-    case 'i':
-      //updateLED(0x03, 0xff, 0xff);
-      Serial.print("\nCurrent step limit exceeded:");
-      Serial.print( String(value) );
-      Serial.print(" nA");
-      break;
-    // ERROR
-    case 'E':
-      //updateLED(0x03, 0xff, 0xff);
-      sendAcknowledge();
-      Serial.print("\nError detected, code:");
-      Serial.print( String(value) );
-      break;
-  }
-
-  Serial.print("\n==============================");
-}
-
-void sendAcknowledge()
-{
-  Serial1.write("*ACK:");
-}
-
-// Update LED script based on the new serial command recieved
-void updateLED(byte script_id, byte fadespeed, byte timeadj) {
-  BlinkM_stopScript(0x00);
-  BlinkM_playScript(0x00, script_id, 0x00, 0x00);
-  BlinkM_setFadeSpeed(0x00, fadespeed);
-  BlinkM_setTimeAdj(0x00, timeadj);
-}
+// ============================================================
+// modules
+// ============================================================
 
 
 

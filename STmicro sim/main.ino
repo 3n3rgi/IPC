@@ -42,8 +42,8 @@ void loop()
 void sendUpdateToPhoton()
 {
   // Send new voltage and current to the Photon every 400ms
-  sendToPhoton("voltage", random(4000));
-  sendToPhoton("current", random(10));
+  sendToPhoton("voltage", random(3000, 4000));
+  sendToPhoton("current", random(1, 100));
 }
 
 // Interrupt for serial 0 (USB)
@@ -52,7 +52,20 @@ void serialEvent()
 {
     char c = Serial.read();
     //Serial.println(c);
-    Serial1.write("*E1:");
+    switch (c)
+    {
+      case 'a':
+        Serial1.write("*a4:");
+        break;
+      case 'i':
+        Serial1.write("*i12:");
+        break;
+      case 'E':
+        Serial1.write("*E1:");
+        break;
+      default:
+        break;
+    }
 }
 
 // Interrupt for serial 1 (Tx/Rx)
